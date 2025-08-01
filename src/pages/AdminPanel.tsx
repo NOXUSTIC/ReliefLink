@@ -18,18 +18,7 @@ const AdminPanel = () => {
     pendingRequests: 0
   });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user || profile?.role !== 'admin') {
-    return <Navigate to="/auth" replace />;
-  }
-
+  // All hooks must be called before any early returns
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -66,8 +55,22 @@ const AdminPanel = () => {
       }
     };
 
-    fetchStats();
-  }, []);
+    if (user && profile?.role === 'admin') {
+      fetchStats();
+    }
+  }, [user, profile]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user || profile?.role !== 'admin') {
+    return <Navigate to="/auth" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
