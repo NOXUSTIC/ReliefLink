@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigate } from 'react-router-dom';
-import { LogOut, Plus, MapPin, AlertTriangle } from 'lucide-react';
+import { LogOut, Plus, MapPin, AlertTriangle, Package } from 'lucide-react';
 import IncidentList from '@/components/IncidentList';
 import ReportForm from '@/components/ReportForm';
+import ResourceRequestForm from '@/components/ResourceRequestForm';
+import ResourceRequestList from '@/components/ResourceRequestList';
 
 const UserDashboard = () => {
   const { user, profile, signOut, loading } = useAuth();
@@ -48,10 +50,12 @@ const UserDashboard = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="reports">View Reports</TabsTrigger>
             <TabsTrigger value="submit">Submit Report</TabsTrigger>
             <TabsTrigger value="history">My Reports</TabsTrigger>
+            <TabsTrigger value="resources">Resources</TabsTrigger>
+            <TabsTrigger value="my-requests">My Requests</TabsTrigger>
           </TabsList>
 
           <TabsContent value="reports" className="mt-6">
@@ -98,6 +102,37 @@ const UserDashboard = () => {
               </CardHeader>
               <CardContent>
                 <IncidentList userOnly={true} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="resources" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Package className="h-5 w-5 mr-2" />
+                  Request Resources
+                </CardTitle>
+                <CardDescription>
+                  Request emergency resources and aid for your location
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResourceRequestForm />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="my-requests" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>My Resource Requests</CardTitle>
+                <CardDescription>
+                  View your submitted resource requests and their status
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResourceRequestList userOnly={true} />
               </CardContent>
             </Card>
           </TabsContent>
