@@ -33,9 +33,9 @@ const ResourceRequestList = ({ userOnly = false, adminView = false }: ResourceRe
   const { user, profile } = useAuth();
   const [requests, setRequests] = useState<ResourceRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [urgencyFilter, setUrgencyFilter] = useState<string>('');
-  const [resourceTypeFilter, setResourceTypeFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
+  const [resourceTypeFilter, setResourceTypeFilter] = useState<string>('all');
 
   const urgencyColors: Record<string, string> = {
     low: 'bg-green-100 text-green-800',
@@ -124,13 +124,13 @@ const ResourceRequestList = ({ userOnly = false, adminView = false }: ResourceRe
   };
 
   const filteredRequests = requests.filter(request => {
-    if (statusFilter && request.status !== statusFilter) {
+    if (statusFilter && statusFilter !== 'all' && request.status !== statusFilter) {
       return false;
     }
-    if (urgencyFilter && request.urgency !== urgencyFilter) {
+    if (urgencyFilter && urgencyFilter !== 'all' && request.urgency !== urgencyFilter) {
       return false;
     }
-    if (resourceTypeFilter && request.resource_type !== resourceTypeFilter) {
+    if (resourceTypeFilter && resourceTypeFilter !== 'all' && request.resource_type !== resourceTypeFilter) {
       return false;
     }
     return true;
@@ -154,7 +154,7 @@ const ResourceRequestList = ({ userOnly = false, adminView = false }: ResourceRe
             <SelectValue placeholder="Resource Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Types</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="food">Food & Water</SelectItem>
             <SelectItem value="medical">Medical Supplies</SelectItem>
             <SelectItem value="shelter">Shelter & Clothing</SelectItem>
@@ -170,7 +170,7 @@ const ResourceRequestList = ({ userOnly = false, adminView = false }: ResourceRe
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Status</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="in_progress">In Progress</SelectItem>
             <SelectItem value="fulfilled">Fulfilled</SelectItem>
@@ -182,7 +182,7 @@ const ResourceRequestList = ({ userOnly = false, adminView = false }: ResourceRe
             <SelectValue placeholder="Urgency" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Urgency</SelectItem>
+            <SelectItem value="all">All Urgency</SelectItem>
             <SelectItem value="low">Low</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="high">High</SelectItem>
@@ -190,14 +190,14 @@ const ResourceRequestList = ({ userOnly = false, adminView = false }: ResourceRe
           </SelectContent>
         </Select>
 
-        {(statusFilter || urgencyFilter || resourceTypeFilter) && (
+        {(statusFilter !== 'all' || urgencyFilter !== 'all' || resourceTypeFilter !== 'all') && (
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              setStatusFilter('');
-              setUrgencyFilter('');
-              setResourceTypeFilter('');
+              setStatusFilter('all');
+              setUrgencyFilter('all');
+              setResourceTypeFilter('all');
             }}
           >
             Clear Filters

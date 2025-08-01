@@ -35,8 +35,8 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [districtFilter, setDistrictFilter] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [urgencyFilter, setUrgencyFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
 
   const urgencyColors: Record<string, string> = {
     low: 'bg-green-100 text-green-800',
@@ -129,10 +129,10 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
     if (districtFilter && !incident.district?.toLowerCase().includes(districtFilter.toLowerCase())) {
       return false;
     }
-    if (statusFilter && incident.status !== statusFilter) {
+    if (statusFilter && statusFilter !== 'all' && incident.status !== statusFilter) {
       return false;
     }
-    if (urgencyFilter && incident.urgency_level !== urgencyFilter) {
+    if (urgencyFilter && urgencyFilter !== 'all' && incident.urgency_level !== urgencyFilter) {
       return false;
     }
     return true;
@@ -163,7 +163,7 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Status</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="in_progress">In Progress</SelectItem>
             <SelectItem value="resolved">Resolved</SelectItem>
@@ -175,7 +175,7 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
             <SelectValue placeholder="Urgency" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Urgency</SelectItem>
+            <SelectItem value="all">All Urgency</SelectItem>
             <SelectItem value="low">Low</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="high">High</SelectItem>
@@ -183,14 +183,14 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
           </SelectContent>
         </Select>
 
-        {(districtFilter || statusFilter || urgencyFilter) && (
+        {(districtFilter || statusFilter !== 'all' || urgencyFilter !== 'all') && (
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
               setDistrictFilter('');
-              setStatusFilter('');
-              setUrgencyFilter('');
+              setStatusFilter('all');
+              setUrgencyFilter('all');
             }}
           >
             Clear Filters
