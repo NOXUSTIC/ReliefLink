@@ -1,12 +1,22 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Navigate } from 'react-router-dom';
-import { LogOut, Shield, AlertTriangle, Users, FileText } from 'lucide-react';
+import { LogOut, Shield, AlertTriangle, Users, FileText, Package } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import IncidentList from '@/components/IncidentList';
+import ResourceRequestList from '@/components/ResourceRequestList';
 
 const AdminPanel = () => {
   const { user, profile, signOut, loading } = useAuth();
+  const [stats, setStats] = useState({
+    totalReports: 0,
+    activeIncidents: 0,
+    totalUsers: 0,
+    pendingRequests: 0
+  });
 
   if (loading) {
     return (
@@ -19,6 +29,45 @@ const AdminPanel = () => {
   if (!user || profile?.role !== 'admin') {
     return <Navigate to="/auth" replace />;
   }
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch total incidents
+        const { count: incidentCount } = await supabase
+          .from('incidents')
+          .select('*', { count: 'exact', head: true });
+
+        // Fetch active incidents (not resolved)
+        const { count: activeCount } = await supabase
+          .from('incidents')
+          .select('*', { count: 'exact', head: true })
+          .neq('status', 'resolved');
+
+        // Fetch total profiles
+        const { count: userCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+
+        // Fetch pending resource requests
+        const { count: requestCount } = await supabase
+          .from('resource_requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'pending');
+
+        setStats({
+          totalReports: incidentCount || 0,
+          activeIncidents: activeCount || 0,
+          totalUsers: userCount || 0,
+          pendingRequests: requestCount || 0
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +99,7 @@ const AdminPanel = () => {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">--</div>
+              <div className="text-2xl font-bold">{stats.totalReports}</div>
               <p className="text-xs text-muted-foreground">All time</p>
             </CardContent>
           </Card>
@@ -61,7 +110,7 @@ const AdminPanel = () => {
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">--</div>
+              <div className="text-2xl font-bold">{stats.activeIncidents}</div>
               <p className="text-xs text-muted-foreground">Pending resolution</p>
             </CardContent>
           </Card>
@@ -72,23 +121,49 @@ const AdminPanel = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">--</div>
+              <div className="text-2xl font-bold">{stats.totalUsers}</div>
               <p className="text-xs text-muted-foreground">Total users</p>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Incident Management</CardTitle>
-            <CardDescription>
-              Review, update, and manage all incident reports
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <IncidentList adminView={true} />
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="incidents" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="incidents">Incident Management</TabsTrigger>
+            <TabsTrigger value="resources">Resource Requests</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="incidents" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Incident Management</CardTitle>
+                <CardDescription>
+                  Review, update, and manage all incident reports
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <IncidentList adminView={true} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="resources" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Package className="h-5 w-5 mr-2" />
+                  Resource Request Management
+                </CardTitle>
+                <CardDescription>
+                  Review and manage all resource requests from users
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResourceRequestList adminView={true} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
