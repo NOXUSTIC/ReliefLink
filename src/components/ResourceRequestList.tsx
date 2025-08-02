@@ -60,7 +60,7 @@ const ResourceRequestList = ({ userOnly = false, adminView = false }: ResourceRe
         .from('resource_requests')
         .select(`
           *,
-          profiles!resource_requests_user_id_fkey (full_name)
+          profiles!inner(full_name)
         `)
         .order('created_at', { ascending: false });
 
