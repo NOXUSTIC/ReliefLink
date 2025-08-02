@@ -20,6 +20,9 @@ interface Incident {
   incident_type: string;
   created_at: string;
   user_id: string;
+  image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
   profiles: {
     full_name: string;
   } | null;
@@ -34,9 +37,10 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
   const { user, profile } = useAuth();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
-  const [districtFilter, setDistrictFilter] = useState<string>('');
+  const [districtFilter, setDistrictFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('time');
 
   const urgencyColors: Record<string, string> = {
     low: 'bg-green-100 text-green-800',
@@ -125,18 +129,28 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
     }
   };
 
-  const filteredIncidents = incidents.filter(incident => {
-    if (districtFilter && !incident.district?.toLowerCase().includes(districtFilter.toLowerCase())) {
-      return false;
-    }
-    if (statusFilter && statusFilter !== 'all' && incident.status !== statusFilter) {
-      return false;
-    }
-    if (urgencyFilter && urgencyFilter !== 'all' && incident.urgency_level !== urgencyFilter) {
-      return false;
-    }
-    return true;
-  });
+  // Get unique districts for filter dropdown
+  const districts = [...new Set(incidents.map(i => i.district).filter(Boolean))];
+
+  const filteredAndSortedIncidents = incidents
+    .filter(incident => {
+      const matchesDistrict = districtFilter === 'all' || incident.district === districtFilter;
+      const matchesStatus = statusFilter === 'all' || incident.status === statusFilter;
+      const matchesUrgency = urgencyFilter === 'all' || incident.urgency_level === urgencyFilter;
+      
+      return matchesDistrict && matchesStatus && matchesUrgency;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'urgency':
+          const urgencyOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+          return urgencyOrder[b.urgency_level as keyof typeof urgencyOrder] - 
+                 urgencyOrder[a.urgency_level as keyof typeof urgencyOrder];
+        case 'time':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
 
   if (loading) {
     return <div className="text-center py-8">Loading incidents...</div>;
@@ -145,75 +159,101 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4" />
-          <span className="text-sm font-medium">Filters:</span>
+      <div className="grid gap-4 md:grid-cols-5 p-4 bg-card rounded-lg border">
+        <div>
+          <span className="text-sm font-medium mb-2 block">District</span>
+          <Select value={districtFilter} onValueChange={setDistrictFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Districts" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Districts</SelectItem>
+              {districts.map((district) => (
+                <SelectItem key={district} value={district!}>
+                  {district}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        
-        <Input
-          placeholder="Filter by district..."
-          value={districtFilter}
-          onChange={(e) => setDistrictFilter(e.target.value)}
-          className="w-48"
-        />
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="resolved">Resolved</SelectItem>
-          </SelectContent>
-        </Select>
+        <div>
+          <span className="text-sm font-medium mb-2 block">Status</span>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Urgency" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Urgency</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="critical">Critical</SelectItem>
-          </SelectContent>
-        </Select>
+        <div>
+          <span className="text-sm font-medium mb-2 block">Urgency</span>
+          <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Urgency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Urgency</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        {(districtFilter || statusFilter !== 'all' || urgencyFilter !== 'all') && (
+        <div>
+          <span className="text-sm font-medium mb-2 block">Sort By</span>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="time">Latest First</SelectItem>
+              <SelectItem value="urgency">Urgency Level</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <span className="text-sm font-medium mb-2 block">Actions</span>
           <Button
             variant="outline"
-            size="sm"
             onClick={() => {
-              setDistrictFilter('');
+              setDistrictFilter('all');
               setStatusFilter('all');
               setUrgencyFilter('all');
+              setSortBy('time');
             }}
+            className="w-full"
           >
             Clear Filters
           </Button>
-        )}
+        </div>
       </div>
 
       {/* Incidents */}
       <div className="space-y-4">
-        {filteredIncidents.length === 0 ? (
+        {filteredAndSortedIncidents.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <p className="text-muted-foreground">No incidents found</p>
+              <p className="text-muted-foreground">No incidents found matching your filters</p>
             </CardContent>
           </Card>
         ) : (
-          filteredIncidents.map((incident) => (
+          filteredAndSortedIncidents.map((incident) => (
             <Card key={incident.id}>
               <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1">
                     <CardTitle className="text-lg">{incident.title}</CardTitle>
-                    <CardDescription className="flex items-center space-x-4 mt-2">
+                    <CardDescription className="flex flex-wrap items-center gap-4 mt-2">
                       <span className="flex items-center">
                         <MapPin className="h-4 w-4 mr-1" />
                         {incident.location}
@@ -229,7 +269,18 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
                       </span>
                     </CardDescription>
                   </div>
-                  <div className="flex space-x-2">
+                  
+                  {incident.image_url && (
+                    <div className="flex-shrink-0">
+                      <img
+                        src={incident.image_url}
+                        alt="Incident photo"
+                        className="w-20 h-20 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col space-y-2">
                     <Badge className={urgencyColors[incident.urgency_level]}>
                       {incident.urgency_level}
                     </Badge>
