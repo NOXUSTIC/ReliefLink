@@ -3,15 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>releif-link</title>
+    <title>relief-link</title>
 
-    <meta property="og:title" content="releif-link" />
+    <meta property="og:title" content="relief-link" />
     <meta property="og:type" content="website" />
 
+    <!-- Optional: Tailwind CDN (for preview/debug) -->
+    <!-- Remove if you're using PostCSS+Tailwind in build -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
   </head>
 
-  <body>
+  <body class="bg-background text-foreground">
+    <!-- Commit bar -->
+    <div class="commit-bar bg-muted text-muted-foreground border-b border-border p-4 text-sm text-center">
+      Last commit by <strong>lovable-dev[bot]</strong>: <em>“Fix fetch resource request error”</em>
+    </div>
+
+    <!-- React root -->
     <div id="root"></div>
+
+    <!-- React entry -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
