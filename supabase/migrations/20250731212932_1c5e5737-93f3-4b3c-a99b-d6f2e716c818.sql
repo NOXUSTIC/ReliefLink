@@ -1,4 +1,4 @@
--- Create user profiles table for additional user data
+
 CREATE TABLE public.profiles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -8,10 +8,10 @@ CREATE TABLE public.profiles (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
--- Enable RLS on profiles
+
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Create incidents table for disaster reports
+
 CREATE TABLE public.incidents (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -29,10 +29,10 @@ CREATE TABLE public.incidents (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
--- Enable RLS on incidents
+
 ALTER TABLE public.incidents ENABLE ROW LEVEL SECURITY;
 
--- Create resource requests table
+
 CREATE TABLE public.resource_requests (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -47,10 +47,10 @@ CREATE TABLE public.resource_requests (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
--- Enable RLS on resource requests
+
 ALTER TABLE public.resource_requests ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for profiles
+
 CREATE POLICY "Users can view all profiles" 
 ON public.profiles 
 FOR SELECT 
