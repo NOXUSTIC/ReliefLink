@@ -1,9 +1,9 @@
--- Create storage bucket for incident photos
+
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('incident-photos', 'incident-photos', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Create storage policies for incident photos
+
 CREATE POLICY "Anyone can view incident photos" 
 ON storage.objects 
 FOR SELECT 
