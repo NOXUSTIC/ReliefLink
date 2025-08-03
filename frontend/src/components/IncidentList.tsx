@@ -77,7 +77,6 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
 
       if (error) throw error;
       
-      // Transform the data to match our interface
       const transformedData: Incident[] = (data || []).map(item => ({
         ...item,
         profiles: item.profiles && typeof item.profiles === 'object' && !Array.isArray(item.profiles) && 'full_name' in item.profiles 
@@ -129,7 +128,6 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
     }
   };
 
-  // Filter and sort incidents
   const filteredIncidents = incidents.filter(incident => {
     if (districtFilter !== 'all' && incident.district !== districtFilter) return false;
     if (statusFilter !== 'all' && incident.status !== statusFilter) return false;
