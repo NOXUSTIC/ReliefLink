@@ -59,7 +59,7 @@ const Index = () => {
           </div>
           <div className="space-x-4">
             {user ? (
-              <Button onClick={() => navigate(profile?.role === 'admin' ? '/admin-panel' : '/user-dashboard')}>
+              <Button onClick={() => navigate(profile?.role === 'admin' ? "/admin-panel" : "/user-dashboard")}>
                 Dashboard
               </Button>
             ) : (
@@ -84,7 +84,7 @@ const Index = () => {
             {user ? (
               <Button 
                 size="lg" 
-                onClick={() => navigate(profile?.role === 'admin' ? '/admin-panel' : '/user-dashboard')}
+                onClick={() => navigate(profile?.role === 'admin' ? "/admin-panel" : "/user-dashboard")}
               >
                 Go to Dashboard
               </Button>
