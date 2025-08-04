@@ -1,12 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { AlertTriangle, Shield, Users, Zap } from "lucide-react";
 
 const Index = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Handle auth redirects
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  if (user && profile) {
+    if (profile.role === 'admin') {
+      return <Navigate to="/admin-panel" replace />;
+    } else {
+      return <Navigate to="/user-dashboard" replace />;
+    }
+  }
 
   const features = [
     {
