@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AlertTriangle, Shield, Users, Zap } from "lucide-react";
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
 
   const features = [
@@ -42,7 +42,7 @@ const Index = () => {
           </div>
           <div className="space-x-4">
             {user ? (
-              <Button onClick={() => navigate('/user-dashboard')}>
+              <Button onClick={() => navigate(profile?.role === 'admin' ? '/admin-panel' : '/user-dashboard')}>
                 Dashboard
               </Button>
             ) : (
@@ -67,7 +67,7 @@ const Index = () => {
             {user ? (
               <Button 
                 size="lg" 
-                onClick={() => navigate('/user-dashboard')}
+                onClick={() => navigate(profile?.role === 'admin' ? '/admin-panel' : '/user-dashboard')}
               >
                 Go to Dashboard
               </Button>
