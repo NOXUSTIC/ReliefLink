@@ -6,6 +6,9 @@ import { AlertTriangle, Shield, Users, Zap } from "lucide-react";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
+  
+  // Debug logging
+  console.log('Index page - Auth state:', { user: !!user, profile, loading });
   const navigate = useNavigate();
 
   // Handle auth redirects
