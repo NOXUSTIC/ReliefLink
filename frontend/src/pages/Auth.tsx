@@ -20,7 +20,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
+        if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -28,11 +28,20 @@ const Auth = () => {
 
         if (error) throw error;
 
+        // Check if email is admin email
+        const isAdminEmail = email.toLowerCase().includes('@g.bracu.ac.bd');
+        
         toast({
           title: "Success",
           description: "Signed in successfully",
         });
-        navigate('/admin-panel');
+        
+        // Navigate based on email domain
+        if (isAdminEmail) {
+          navigate('/admin-panel');
+        } else {
+          navigate('/user-dashboard');
+        }
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -56,11 +65,20 @@ const Auth = () => {
           }
         }
 
+        // Check if email is admin email for new accounts
+        const isAdminEmail = email.toLowerCase().includes('@g.bracu.ac.bd');
+        
         toast({
           title: "Success",
           description: "Account created successfully",
         });
-        navigate('/user-dashboard');
+        
+        // Navigate based on email domain for new accounts
+        if (isAdminEmail) {
+          navigate('/admin-panel');
+        } else {
+          navigate('/user-dashboard');
+        }
       }
     } catch (error: any) {
       toast({
@@ -74,7 +92,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-muted to-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -150,7 +168,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-sm text-primary hover:underline"
+                className="text-sm text-blue-600 hover:underline"
               >
                 {isLogin 
                   ? "Don't have an account? Sign up" 
