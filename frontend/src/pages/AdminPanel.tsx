@@ -6,16 +6,29 @@ import IncidentList from '@/components/IncidentList';
 import { AlertTriangle, LogOut, Shield } from 'lucide-react';
 
 const AdminPanel = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const navigate = useNavigate();
+
+  console.log('AdminPanel - Auth state:', { user: !!user, profile, loading });
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
 
-  if (!user || profile?.role !== 'admin') {
-    navigate('/user-dashboard');
+  // Show loading while auth state is being determined
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  // Redirect if not authenticated or not admin
+  if (!user || !profile || profile.role !== 'admin') {
+    console.log('Redirecting to auth - user:', !!user, 'profile role:', profile?.role);
+    navigate('/auth');
     return null;
   }
 
@@ -39,7 +52,7 @@ const AdminPanel = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h2>
-          <p className="text-gray-600">Manage incidents and monitor emergency reports.</p>
+          <p className="text-gray-600">Manage, moderate, and update incidents and aid requests.</p>
         </div>
 
         <Card>
