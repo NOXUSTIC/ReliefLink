@@ -32,7 +32,7 @@ const Auth = () => {
           title: "Success",
           description: "Signed in successfully",
         });
-        navigate('/user-dashboard');
+        navigate('/admin-panel');
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
