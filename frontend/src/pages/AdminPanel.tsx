@@ -38,7 +38,7 @@ const AdminPanel = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <Shield className="h-6 w-6 text-blue-600" />
+              <Shield className="h-6 w-6 text-primary" />
               <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
             </div>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
