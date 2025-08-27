@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
-import { MapPin, Clock, User, Filter } from 'lucide-react';
+import { MapPin, Clock, User, Filter, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 interface Incident {
   id: string;
@@ -152,6 +153,68 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
     }
   };
 
+  const downloadIncidentPDF = (incident: Incident) => {
+    try {
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(20);
+      doc.text('Incident Report', 20, 20);
+      
+      // Report details
+      doc.setFontSize(12);
+      let yPosition = 40;
+      
+      doc.text(`Title: ${incident.title}`, 20, yPosition);
+      yPosition += 10;
+      
+      doc.text(`Type: ${incident.incident_type}`, 20, yPosition);
+      yPosition += 10;
+      
+      doc.text(`Status: ${incident.status.replace('_', ' ')}`, 20, yPosition);
+      yPosition += 10;
+      
+      doc.text(`Urgency: ${incident.urgency_level}`, 20, yPosition);
+      yPosition += 10;
+      
+      doc.text(`Location: ${incident.location}`, 20, yPosition);
+      yPosition += 10;
+      
+      if (incident.district) {
+        doc.text(`District: ${incident.district}`, 20, yPosition);
+        yPosition += 10;
+      }
+      
+      doc.text(`Reported by: ${incident.profiles?.full_name || 'Anonymous'}`, 20, yPosition);
+      yPosition += 10;
+      
+      doc.text(`Date: ${new Date(incident.created_at).toLocaleString()}`, 20, yPosition);
+      yPosition += 15;
+      
+      // Description
+      doc.text('Description:', 20, yPosition);
+      yPosition += 10;
+      
+      const splitDescription = doc.splitTextToSize(incident.description, 170);
+      doc.text(splitDescription, 20, yPosition);
+      
+      // Save the PDF
+      doc.save(`incident-report-${incident.id.slice(0, 8)}.pdf`);
+      
+      toast({
+        title: "Success",
+        description: "PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredIncidents = incidents.filter(incident => {
     if (districtFilter !== 'all' && incident.district !== districtFilter) return false;
     if (statusFilter !== 'all' && incident.status !== statusFilter) return false;
@@ -279,7 +342,7 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
                 )}
               </div>
 
-              <div className="mt-4 pt-4 border-t">
+              <div className="mt-4 pt-4 border-t flex justify-between items-center">
                 {adminView && profile?.role === 'admin' && (
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Update Status:</span>
@@ -297,6 +360,18 @@ const IncidentList = ({ userOnly = false, adminView = false }: IncidentListProps
                       </SelectContent>
                     </Select>
                   </div>
+                )}
+                
+                {userOnly && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadIncidentPDF(incident)}
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download PDF
+                  </Button>
                 )}
               </div>
             </CardContent>
