@@ -29,6 +29,17 @@ const Index = () => {
     }
   }
 
+  // Handle case where user exists but profile is still loading/missing
+  if (user && !loading) {
+    // Check if it's an admin email and redirect accordingly
+    const isAdminEmail = user.email?.toLowerCase().includes('@g.bracu.ac.bd');
+    if (isAdminEmail) {
+      return <Navigate to="/admin-panel" replace />;
+    } else {
+      return <Navigate to="/user-dashboard" replace />;
+    }
+  }
+
   const features = [
     {
       icon: AlertTriangle,
