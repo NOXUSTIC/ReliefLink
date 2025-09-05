@@ -32,7 +32,5 @@ cd database
 # Database setup instructions will be added here
 ```
 
-## Deployment
 
-The application is configured for deployment on Vercel.
 
