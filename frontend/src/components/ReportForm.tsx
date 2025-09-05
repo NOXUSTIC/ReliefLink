@@ -15,7 +15,6 @@ interface FormData {
   district: string;
   urgency_level: string;
   incident_type: string;
-  image_url: string;
 }
 
 const ReportForm = () => {
@@ -26,9 +25,9 @@ const ReportForm = () => {
     location: '',
     district: '',
     urgency_level: '',
-    incident_type: '',
-    image_url: ''
+    incident_type: ''
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const incidentTypes = [
@@ -64,6 +63,23 @@ const ReportForm = () => {
     }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (validTypes.includes(file.type)) {
+        setSelectedFile(file);
+      } else {
+        toast({
+          title: "Error",
+          description: "Please select a valid image file (JPEG, JPG, or PNG)",
+          variant: "destructive",
+        });
+        e.target.value = '';
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -88,6 +104,29 @@ const ReportForm = () => {
     setIsSubmitting(true);
 
     try {
+      let imageUrl = null;
+
+      // Upload image if selected
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('incident-photos')
+          .upload(fileName, selectedFile);
+
+        if (uploadError) {
+          throw new Error('Failed to upload image');
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('incident-photos')
+          .getPublicUrl(fileName);
+        
+        imageUrl = publicUrl;
+      }
+
       const { error } = await supabase
         .from('incident_reports')
         .insert({
@@ -97,7 +136,7 @@ const ReportForm = () => {
           district: formData.district || null,
           urgency_level: formData.urgency_level,
           incident_type: formData.incident_type,
-          image_url: formData.image_url || null,
+          image_url: imageUrl,
           user_id: user.id,
           status: 'pending'
         });
@@ -116,9 +155,13 @@ const ReportForm = () => {
         location: '',
         district: '',
         urgency_level: '',
-        incident_type: '',
-        image_url: ''
+        incident_type: ''
       });
+      setSelectedFile(null);
+      
+      // Reset file input
+      const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
     } catch (error) {
       console.error('Error submitting incident:', error);
       toast({
@@ -238,16 +281,21 @@ const ReportForm = () => {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="image_url" className="text-sm font-medium">
-              Image URL (optional)
+            <label htmlFor="image-upload" className="text-sm font-medium">
+              Upload Image (optional)
             </label>
             <Input
-              id="image_url"
-              value={formData.image_url}
-              onChange={(e) => handleInputChange('image_url', e.target.value)}
-              placeholder="URL to an image of the incident"
-              type="url"
+              id="image-upload"
+              type="file"
+              accept=".jpeg,.jpg,.png"
+              onChange={handleFileChange}
+              className="cursor-pointer"
             />
+            {selectedFile && (
+              <p className="text-sm text-muted-foreground">
+                Selected: {selectedFile.name}
+              </p>
+            )}
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
