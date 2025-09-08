@@ -49,11 +49,15 @@ const ReportForm = () => {
   ];
 
   const districts = [
-    'North',
-    'South',
-    'East',
-    'West',
-    'Central'
+      'Barishal',
+      'Chattogram',
+      'Dhaka',
+      'Khulna',
+      'Mymensingh',
+      'Rajshahi',
+      'Rangpur',
+      'Sylhet'
+
   ];
 
   const handleInputChange = (field: keyof FormData, value: string) => {
